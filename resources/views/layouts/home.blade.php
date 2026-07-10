@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <x-google-analytics />
+    <x-site-icons />
     {!! SEO::generate() !!}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,14 +17,19 @@
     'resources/js/app.js'
     ])
 
+    @stack('head')
+
 </head>
 
 <body class="max-md:pb-[calc(4.75rem+env(safe-area-inset-bottom))]">
     <x-Navbar />
 
+    <x-mobile-contact-bar />
     @yield('content')
 
+    <x-socials />
     <x-Footer />
 
+    @stack('scripts')
 </body>
 </html>

@@ -1,0 +1,311 @@
+<?php
+
+namespace App\Services\LoveThaiHome;
+
+use App\Contracts\LoveThaiHomeApiClientInterface;
+use App\Data\LoveThaiHome\ArticleDetailData;
+use App\Data\LoveThaiHome\ArticlesPaginatedResponse;
+use App\Data\LoveThaiHome\CustomerAssetData;
+use App\Data\LoveThaiHome\PaginatedResponse;
+use App\Data\LoveThaiHome\PropertyDetailData;
+use App\Data\LoveThaiHome\PropertyTypeData;
+use App\Services\LoveThaiHome\Exceptions\LoveThaiHomeApiException;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
+
+class LoveThaiHomeApiClient implements LoveThaiHomeApiClientInterface
+{
+    public function propertyTypes(): array
+    {
+        $payload = $this->get('property-types');
+
+        return collect($payload['data'] ?? [])
+            ->map(fn (array $item) => PropertyTypeData::fromArray($item))
+            ->sortBy('seq')
+            ->values()
+            ->all();
+    }
+
+    public function properties(array $filters = []): PaginatedResponse
+    {
+        $query = array_filter([
+            'asset_type_id' => $filters['asset_type_id'] ?? null,
+            'agent_id' => $filters['agent_id'] ?? null,
+            'user_id' => $filters['user_id'] ?? null,
+            'is_recommend' => $filters['is_recommend'] ?? null,
+            'page' => $filters['page'] ?? 1,
+            'per_page' => min(max((int) ($filters['per_page'] ?? 30), 1), 100),
+        ], fn ($value) => $value !== null && $value !== '');
+
+        return PaginatedResponse::fromArray(
+            $this->get('properties', $query)
+        );
+    }
+
+    public function searchProperties(array $filters = []): PaginatedResponse
+    {
+        $priceMax = $filters['price_max'] ?? null;
+
+        if ($priceMax === 'unlimited') {
+            $priceMax = null;
+        }
+
+        $query = array_filter([
+            'text' => $filters['text'] ?? null,
+            'asset_type_id' => $filters['asset_type_id'] ?? null,
+            'province' => $filters['province'] ?? null,
+            'district' => $filters['district'] ?? null,
+            'amphur' => $filters['amphur'] ?? null,
+            'price_min' => $filters['price_min'] ?? null,
+            'price_max' => $priceMax,
+            'page' => $filters['page'] ?? 1,
+            'per_page' => min(max((int) ($filters['per_page'] ?? 30), 1), 100),
+        ], fn ($value) => $value !== null && $value !== '');
+
+        return PaginatedResponse::fromArray(
+            $this->get('properties/search', $query)
+        );
+    }
+
+    public function property(string $id): PropertyDetailData
+    {
+        $payload = $this->get('properties/'.urlencode($id));
+        $data = $payload['data'] ?? $payload;
+
+        if (! is_array($data) || ! isset($data['id'])) {
+            throw new LoveThaiHomeApiException('Property not found.', statusCode: 404);
+        }
+
+        return PropertyDetailData::fromArray($data);
+    }
+
+    public function recordPropertyView(string $id): array
+    {
+        return $this->post('properties/'.urlencode($id).'/views');
+    }
+
+    public function agents(): array
+    {
+        return $this->get('agents')['data'] ?? [];
+    }
+
+    public function sellers(): array
+    {
+        return $this->get('seller')['data'] ?? [];
+    }
+
+    /**
+     * @param  array<string, mixed>|CustomerAssetData  $payload
+     * @param  list<UploadedFile>  $images
+     * @return array<string, mixed>
+     */
+    public function createCustomerAsset(array|CustomerAssetData $payload, array $images = []): array
+    {
+        if ($payload instanceof CustomerAssetData) {
+            $payload = $payload->toArray();
+        }
+
+        if ($images !== []) {
+            return $this->postMultipart('customer-assets', $payload, $images);
+        }
+
+        return $this->post('customer-assets', $payload);
+    }
+
+    public function articles(array $filters = []): ArticlesPaginatedResponse
+    {
+        $query = array_filter([
+            'category_id' => $filters['category_id'] ?? null,
+            'page' => $filters['page'] ?? 1,
+            'per_page' => min(max((int) ($filters['per_page'] ?? 20), 1), 100),
+        ], fn ($value) => $value !== null && $value !== '');
+
+        return ArticlesPaginatedResponse::fromArray(
+            $this->get('articles', $query)
+        );
+    }
+
+    public function article(string $id): ArticleDetailData
+    {
+        $payload = $this->get('articles/'.urlencode($id));
+        $data = $payload['data'] ?? $payload;
+
+        if (! is_array($data) || ! isset($data['id'])) {
+            throw new LoveThaiHomeApiException('Article not found.', statusCode: 404);
+        }
+
+        return ArticleDetailData::fromArray($data);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function get(string $path, array $query = []): array
+    {
+        return $this->request('get', $path, ['query' => $query]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function post(string $path, array $payload = []): array
+    {
+        return $this->request('post', $path, ['json' => $payload]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @param  list<UploadedFile>  $images
+     * @return array<string, mixed>
+     */
+    protected function postMultipart(string $path, array $payload, array $images): array
+    {
+        $this->ensureConfigured();
+
+        try {
+            $request = $this->httpMultipart();
+
+            foreach ($images as $image) {
+                $request = $request->attach(
+                    'images[]',
+                    fopen($image->getRealPath(), 'r'),
+                    $image->getClientOriginalName(),
+                );
+            }
+
+            $response = $request
+                ->post($this->endpoint($path), $this->flattenForMultipart($payload))
+                ->throw();
+
+            $json = $response->json();
+
+            return is_array($json) ? $json : [];
+        } catch (ConnectionException $exception) {
+            throw new LoveThaiHomeApiException(
+                'Unable to connect to Love Thai Home API.',
+                previous: $exception,
+            );
+        } catch (RequestException $exception) {
+            $response = $exception->response;
+
+            throw new LoveThaiHomeApiException(
+                $response?->json('message') ?? $exception->getMessage(),
+                statusCode: $response?->status(),
+                responseBody: $response?->json(),
+                previous: $exception,
+            );
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, string>
+     */
+    protected function flattenForMultipart(array $data, string $prefix = ''): array
+    {
+        $fields = [];
+
+        foreach ($data as $key => $value) {
+            if ($value === null) {
+                continue;
+            }
+
+            $name = $prefix === '' ? (string) $key : "{$prefix}[{$key}]";
+
+            if (is_array($value)) {
+                $fields = array_merge($fields, $this->flattenForMultipart($value, $name));
+
+                continue;
+            }
+
+            if (is_bool($value)) {
+                $value = $value ? '1' : '0';
+            }
+
+            $fields[$name] = (string) $value;
+        }
+
+        return $fields;
+    }
+
+    /**
+     * @param  array<string, mixed>  $options
+     * @return array<string, mixed>
+     */
+    protected function request(string $method, string $path, array $options = []): array
+    {
+        $this->ensureConfigured();
+
+        try {
+            $response = $this->http()
+                ->{$method}($this->endpoint($path), $options['json'] ?? $options['query'] ?? [])
+                ->throw();
+
+            $json = $response->json();
+
+            return is_array($json) ? $json : [];
+        } catch (ConnectionException $exception) {
+            throw new LoveThaiHomeApiException(
+                'Unable to connect to Love Thai Home API.',
+                previous: $exception,
+            );
+        } catch (RequestException $exception) {
+            $response = $exception->response;
+
+            throw new LoveThaiHomeApiException(
+                $response?->json('message') ?? $exception->getMessage(),
+                statusCode: $response?->status(),
+                responseBody: $response?->json(),
+                previous: $exception,
+            );
+        }
+    }
+
+    protected function http(): PendingRequest
+    {
+        $retry = config('lovethaihome_api.retry');
+
+        return Http::baseUrl(config('lovethaihome_api.base_url'))
+            ->acceptJson()
+            ->asJson()
+            ->timeout(config('lovethaihome_api.timeout'))
+            ->withToken(config('lovethaihome_api.token'))
+            ->retry(
+                $retry['times'],
+                $retry['sleep_ms'],
+                throw: false,
+            );
+    }
+
+    protected function httpMultipart(): PendingRequest
+    {
+        $retry = config('lovethaihome_api.retry');
+
+        return Http::baseUrl(config('lovethaihome_api.base_url'))
+            ->acceptJson()
+            ->timeout(config('lovethaihome_api.timeout'))
+            ->withToken(config('lovethaihome_api.token'))
+            ->retry(
+                $retry['times'],
+                $retry['sleep_ms'],
+                throw: false,
+            );
+    }
+
+    protected function endpoint(string $path): string
+    {
+        return '/'.ltrim($path, '/');
+    }
+
+    protected function ensureConfigured(): void
+    {
+        if (blank(config('lovethaihome_api.base_url')) || blank(config('lovethaihome_api.token'))) {
+            throw new LoveThaiHomeApiException(
+                'Love Thai Home API is not configured. Set LOVE_THAI_HOME_API_URL and LOVE_THAI_HOME_API_TOKEN in .env.'
+            );
+        }
+    }
+}
