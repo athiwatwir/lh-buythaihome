@@ -144,10 +144,7 @@ $breadcrumbSchemaJson = json_encode(PropertySeo::breadcrumbSchema($property), JS
 
 
                 {{-- Main info --}}
-                <div class="mt-3 md:mt-6 rounded-xl border border-gray-200 bg-white p-2 md:p-4 shadow-sm">
-
-
-
+                <div class="mt-3 rounded-xl border border-gray-200 bg-white p-3 shadow-sm md:mt-6 md:p-6">
                     <div class="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
                         @if ($property->formattedArea())
                         <div class="rounded-xl bg-gray-50 p-3 sm:p-4">
@@ -167,8 +164,6 @@ $breadcrumbSchemaJson = json_encode(PropertySeo::breadcrumbSchema($property), JS
                             <p class="mt-1 text-sm font-semibold text-gray-900 sm:text-base">{{ $property->bathroom }} ห้อง</p>
                         </div>
                         @endif
-
-
                     </div>
 
                     @if ($property->formattedAddress())
@@ -178,13 +173,11 @@ $breadcrumbSchemaJson = json_encode(PropertySeo::breadcrumbSchema($property), JS
                     </div>
                     @endif
 
-
-
                     <div class="mt-6 border-t border-gray-100 pt-6">
                         <p class="text-xs font-semibold text-gray-500 sm:text-sm">รหัสทรัพย์ #{{ $property->code }}</p>
                         <h2 class="heading-font text-base font-bold text-blue-900 sm:text-lg">รายละเอียดเพิ่มเติม</h2>
                         @if ($property->description)
-                        <div class="article-content mt-3 min-w-0">
+                        <div class="article-content mt-3">
                             {!! $property->renderedDescription() !!}
                         </div>
                         @else
@@ -196,7 +189,13 @@ $breadcrumbSchemaJson = json_encode(PropertySeo::breadcrumbSchema($property), JS
                     <x-property-map :latitude="$property->latitude" :longitude="$property->longitude" :label="$property->name" :google-maps-url="$property->googleMapsUrl()" :google-maps-directions-url="$property->googleMapsDirectionsUrl()" />
                     @endif
 
-
+                    <div class="mt-6 flex justify-end border-t border-gray-100 pt-6">
+                        <a href="{{ route('properties.showImage', $property->id) }}" target="_blank" rel="noopener noreferrer" class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gray-400 text-white shadow-sm transition" title="ดูรูปภาพทั้งหมด" aria-label="ดูรูปภาพทั้งหมด">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                            </svg>
+                        </a>
+                    </div>
                 </div>
             </div>
 

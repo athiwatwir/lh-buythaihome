@@ -184,7 +184,9 @@ p {
 
 @layer components {
     .article-content {
-        @apply max-w-none break-words text-sm leading-relaxed text-gray-700 md:text-base;
+        @apply w-full min-w-0 max-w-none break-words text-sm leading-relaxed text-gray-700 md:text-base;
+        display: flow-root;
+        overflow-wrap: anywhere;
     }
 
     .article-content :where(p) {
@@ -233,7 +235,36 @@ p {
     }
 
     .article-content :where(img) {
-        @apply my-3 max-w-full rounded-lg;
+        @apply my-3 h-auto max-w-full rounded-lg;
+        float: none !important;
+        clear: both;
+    }
+
+    .article-content :where(figure) {
+        @apply my-3 max-w-full;
+        float: none !important;
+        clear: both;
+    }
+
+    .article-content :where(table) {
+        @apply my-3 w-full border-collapse text-left;
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .article-content :where(td, th) {
+        @apply border border-gray-200 px-2 py-1 align-top;
+    }
+
+    .article-content :where(div) {
+        @apply max-w-full;
+        height: auto !important;
+        max-height: none !important;
+    }
+
+    .article-content :where(iframe) {
+        @apply my-3 max-w-full;
     }
 
     .article-content :where(h2) {
