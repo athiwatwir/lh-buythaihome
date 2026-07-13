@@ -109,7 +109,7 @@
                         </span>
                         <div>
                             <p class="font-semibold text-gray-900">เวลาให้บริการ</p>
-                            <p class="text-sm text-gray-600">ทุกวัน 08:30 – 20:00 น.</p>
+                            <p class="text-sm text-gray-600">วันจันทร์ - เสาร์ 09:00 – 17:00 น.</p>
                         </div>
                     </li>
                     <li class="flex items-start gap-3">
@@ -161,39 +161,28 @@
             </div>
         </section>
 
-        <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm md:p-8">
-            <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-                <div>
-                    <h2 class="heading-font text-xl font-bold text-blue-900 md:text-2xl">ติดตามเรา</h2>
-                    <p class="mt-1 text-sm text-gray-600">อัปเดตทรัพย์ใหม่และความรู้ด้านอสังหาฯ ทุกวัน</p>
+        <section class="rounded-2xl border border-gray-200 bg-white p-2 md:p-4 lg:p-6 shadow-sm md:p-8">
+            <div class="flex flex-col items-center justify-center gap-4 sm:flex-row sm:items-center">
+                <div class="">
+                    <h2 class="heading-font text-xl font-bold text-blue-900 md:text-4xl">แผนที่ตั้ง</h2>
+
                 </div>
             </div>
 
-            <div class="mt-6">
-                <x-social-icon-links
-                    button-class="h-12 w-12 md:h-14 md:w-14"
-                    icon-class="h-6 w-6 md:h-7 md:w-7"
-                    class="justify-start gap-3 md:gap-4"
-                />
+            <div class="mt-2 flex justify-center">
+                <img src="{{ asset('images/map-2.webp') }}" alt="แผนที่ตั้ง" class="w-full md:w-4/5 h-auto">
+            </div>
+            <div class="mt-4 flex justify-center">
+                <a href="https://maps.app.goo.gl/gz7X9yRDeEBGpzVP9" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    นำทาง / เปิดแผนที่
+                </a>
             </div>
 
-            <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                <a href="https://www.facebook.com/Lovethaihomeera/" target="_blank" rel="noopener noreferrer" class="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800">
-                    Facebook — ศูนย์รับฝาก ซื้อ-ขาย บ้านที่ดิน
-                </a>
-                <a href="https://www.facebook.com/lovethaihome1/" target="_blank" rel="noopener noreferrer" class="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800">
-                    Facebook — lovethaihome
-                </a>
-                <a href="https://www.tiktok.com/@era_ladprao101" target="_blank" rel="noopener noreferrer" class="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800">
-                    TikTok — @era_ladprao101
-                </a>
-                <a href="https://www.youtube.com/channel/UCAgAzkauVTeyL9ZQUtWB-eQ" target="_blank" rel="noopener noreferrer" class="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800">
-                    YouTube — lovethaihome
-                </a>
-                <a href="https://line.me/R/ti/p/@era101" target="_blank" rel="noopener noreferrer" class="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800">
-                    LINE Official — @era101
-                </a>
-            </div>
+
         </section>
     </div>
 </div>

@@ -78,7 +78,7 @@ $breadcrumbSchemaJson = json_encode(PropertySeo::breadcrumbSchema($property), JS
                     @if ($property->hasSpecialPrice())
                     <div class="flex min-w-0 items-baseline justify-end gap-2 sm:gap-3">
                         @if ($property->formattedSalePrice())
-                        <p class="text-xl text-blue-700 heading-font sm:text-2xl md:text-3xl"><span class="text-lg text-blue-700 font-bold md:text-xl">ราคาตลาด</span> <span class="line-through">{{ $property->formattedSalePrice() }}</span></p>
+                        <p class="text-xl text-blue-700 heading-font sm:text-2xl md:text-3xl"><span class="text-lg text-blue-700 font-bold md:text-xl">ราคาตลาด</span> <span class="line-through decoration-black">{{ $property->formattedSalePrice() }}</span></p>
                         @endif
                         <p class="text-xl font-bold text-red-700 heading-font sm:text-2xl md:text-3xl">
                             <span class="text-lg text-red-700 font-bold md:text-xl">ขายเพียง</span> {{ $property->formattedSpecialSalePrice() }}
@@ -100,7 +100,7 @@ $breadcrumbSchemaJson = json_encode(PropertySeo::breadcrumbSchema($property), JS
                     @if ($property->formattedSalePrice())
                     <p class="text-xl text-blue-700 heading-font ">
                         <span class="text-lg font-bold text-blue-700">ราคาตลาด</span>
-                        <span class="line-through">{{ $property->formattedSalePrice() }}</span>
+                        <span class="line-through decoration-black">{{ $property->formattedSalePrice() }}</span>
                     </p>
                     @endif
                     <p class="text-2xl font-bold text-red-700 heading-font">

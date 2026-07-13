@@ -48,7 +48,7 @@ $propertyUrl = ($propertyTypeCode && $property->code !== '')
                 @if ($property->hasSpecialPrice())
                 <div class="flex min-w-0 flex-1 items-baseline justify-between gap-2">
                     @if ($property->formattedSalePrice())
-                    <p class="text-xs text-gray-400 line-through heading-font md:text-sm">{{ $property->formattedSalePrice() }}</p>
+                    <p class="text-xs text-blue-700 line-through decoration-black heading-font md:text-sm">{{ $property->formattedSalePrice() }}</p>
                     @endif
                     <p class="shrink-0 text-md font-bold text-red-700 heading-font md:text-lg">{{ $property->formattedSpecialSalePrice() }}</p>
                 </div>
